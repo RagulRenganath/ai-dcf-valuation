@@ -1,21 +1,17 @@
-{
-  "compilerOptions": {
-    "target": "ES2021",
-    "useDefineForClassFields": true,
-    "lib": ["DOM", "ES2021"],
-    "allowJs": false,
-    "skipLibCheck": true,
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "module": "ESNext",
-    "moduleResolution": "Node",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "react-jsx"
+module.exports = {
+  content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
+  theme: {
+    extend: {
+      colors: {
+        primary: "#0B2545",
+        secondary: "#1FB6A4",
+        highlight: "#F5A524",
+        background: "#F7FAFC",
+        darktext: "#1F2D3D"
+      }
+    }
   },
-  "include": ["src"]
-}
+  plugins: []
+};
+
 
