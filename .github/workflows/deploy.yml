@@ -1,4 +1,4 @@
-name: Deploy DCF App to GitHub Pages
+name: DEBUG DEPLOYMENT — DCF App
 
 on:
   push:
@@ -12,7 +12,7 @@ permissions:
   id-token: write
 
 jobs:
-  build-and-deploy:
+  debug-build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -27,8 +27,26 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # Generate .env file from GitHub Secrets
-      - name: Generate environment variables
+      # DEBUG: Show all GitHub secrets available (values masked)
+      - name: DEBUG — List available secrets
+        run: |
+          echo "Listing available secrets:"
+          echo "API KEY: $VITE_FIREBASE_API_KEY"
+          echo "AUTH DOMAIN: $VITE_FIREBASE_AUTH_DOMAIN"
+          echo "PROJECT ID: $VITE_FIREBASE_PROJECT_ID"
+          echo "STORAGE BUCKET: $VITE_FIREBASE_STORAGE_BUCKET"
+          echo "SENDER: $VITE_FIREBASE_MESSAGING_SENDER_ID"
+          echo "APP ID: $VITE_FIREBASE_APP_ID"
+        env:
+          VITE_FIREBASE_API_KEY: ${{ secrets.VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ secrets.VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+
+      # Generate .env file
+      - name: Generate .env file
         run: |
           echo "VITE_FIREBASE_API_KEY=$VITE_FIREBASE_API_KEY" >> .env
           echo "VITE_FIREBASE_AUTH_DOMAIN=$VITE_FIREBASE_AUTH_DOMAIN" >> .env
@@ -44,8 +62,26 @@ jobs:
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
 
+      # DEBUG: confirm .env exists and show masked content
+      - name: DEBUG — Validate .env file
+        run: |
+          echo "Listing root folder:"
+          ls -la
+          echo "Showing .env file (MASKED):"
+          sed -n '1,200p' .env || echo "NO .env FOUND!!!"
+
       - name: Build project
         run: npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+      - name: Deploy to GitHub Pages
+        id: deploy_pages
+        uses: actions/deploy-pages@v4
+
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
