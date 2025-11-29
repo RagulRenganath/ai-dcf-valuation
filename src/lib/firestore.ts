@@ -1,4 +1,4 @@
-import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
+import { collection, addDoc, getDocs, query, where, orderBy } from "firebase/firestore";
 import { db } from "../firebase";
 
 export async function saveValuation(userId: string, payload: any) {
@@ -13,7 +13,8 @@ export async function saveValuation(userId: string, payload: any) {
 
 export async function loadUserValuations(userId: string) {
   const col = collection(db, "valuations");
-  const q = query(col, where("userId", "==", userId));
+  const q = query(col, where("userId", "==", userId), orderBy("createdAt", "desc"));
   const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
+
