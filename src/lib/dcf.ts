@@ -1,107 +1,184 @@
-import { Projection, ValuationInput } from "../types";
-import { discount } from "../utils/helpers";
+// src/lib/dcf.ts
 
-export function calcProjections(base: Projection[]): Projection[] {
-  return base.map((p) => {
-    const nopat = p.ebit * (1 - p.taxRate);
-    const freeCashFlow =
-      nopat + p.depreciation - p.capex - p.changeInWC;
-
-    return { ...p, nopat, freeCashFlow };
-  });
+// --------------------------
+// COST OF EQUITY (CAPM)
+// --------------------------
+export function calculateCostOfEquity(
+  rf: number,        // risk-free rate %
+  beta: number,      // beta
+  rm: number         // market return %
+): number {
+  const Re = rf + beta * (rm - rf);
+  return Re / 100;   // return decimal
 }
 
-export function dcf(inputs: ValuationInput) {
-  const {
-    projections,
-    wacc,
-    perpetualGrowth = 0.02,
-    terminalMethod,
-    exitMultiple = 10,
-    sharesOutstanding
-  } = inputs;
+// --------------------------
+// COST OF DEBT
+// --------------------------
+export function calculateCostOfDebt(
+  interestExpense: number,
+  totalDebt: number
+): number {
+  if (totalDebt === 0) return 0;
+  return interestExpense / totalDebt; // decimal
+}
 
-  const discountRate = wacc;
+// --------------------------
+// WACC CALCULATOR
+// --------------------------
+export function calculateWACC(
+  rf: number,
+  beta: number,
+  rm: number,
+  debt: number,
+  equity: number,
+  interestExpense: number,
+  taxRate: number
+): number {
+  const Re = calculateCostOfEquity(rf, beta, rm); // Cost of equity (decimal)
+  const Rd = calculateCostOfDebt(interestExpense, debt); // Cost of debt (decimal)
+  const T = taxRate / 100;
 
-  // PV of forecasted FCF
-  const pvForecast = projections.reduce((sum, p, idx) => {
-    return sum + discount(p.freeCashFlow, discountRate, idx + 1);
-  }, 0);
+  const V = debt + equity;
+  const E = equity / V;
+  const D = debt / V;
 
-  // Terminal Value
-  const lastFCF = projections[projections.length - 1].freeCashFlow;
+  const wacc = (E * Re) + (D * Rd * (1 - T));
+  return wacc * 100; // Return % for UI
+}
 
-  let terminalValue = 0;
-  if (terminalMethod === "gordon") {
-    terminalValue =
-      (lastFCF * (1 + perpetualGrowth)) /
-      (discountRate - perpetualGrowth);
-  } else {
-    terminalValue = lastFCF * exitMultiple;
+// --------------------------
+// DIVIDEND GROWTH MODEL
+// --------------------------
+export function calculateDGM(
+  d1: number, // next year's dividend
+  r: number,  // required return %
+  g: number   // growth rate %
+): number {
+  const R = r / 100;
+  const G = g / 100;
+
+  if (R <= G) throw new Error("Required return must be greater than growth rate");
+
+  return d1 / (R - G);
+}
+
+// --------------------------
+// FREE CASH FLOW PROJECTION
+// --------------------------
+export function projectFCF(
+  initialFCF: number,
+  growthRate: number,
+  years: number
+): number[] {
+  let list = [];
+  let current = initialFCF;
+
+  for (let i = 0; i < years; i++) {
+    current = current * (1 + growthRate / 100);
+    list.push(current);
   }
+  return list;
+}
 
-  const pvTerminal = discount(
-    terminalValue,
-    discountRate,
-    projections.length
+// --------------------------
+// DISCOUNTING FUNCTION
+// --------------------------
+export function discountValue(
+  value: number,
+  discountRate: number,
+  year: number
+): number {
+  return value / Math.pow(1 + discountRate / 100, year);
+}
+
+// --------------------------
+// TERMINAL VALUE (GORDON)
+// --------------------------
+export function calculateTerminalValueGordon(
+  fcfLastYear: number,
+  perpetualGrowth: number,
+  discountRate: number
+): number {
+  return (fcfLastYear * (1 + perpetualGrowth / 100)) /
+         ((discountRate - perpetualGrowth) / 100);
+}
+
+// --------------------------
+// TERMINAL VALUE (EXIT MULTIPLE)
+// --------------------------
+export function calculateTerminalValueMultiple(
+  fcfLastYear: number,
+  exitMultiple: number
+): number {
+  return fcfLastYear * exitMultiple;
+}
+
+// --------------------------
+// FULL DCF ENGINE
+// --------------------------
+export function runDCF({
+  initialFCF,
+  growthRate,
+  years,
+  discountRate,
+  terminalGrowthRate,
+  exitMultiple,
+  sharesOutstanding
+}: any) {
+  const projectedFCF = projectFCF(initialFCF, growthRate, years);
+
+  const discountedFCF = projectedFCF.map((fcf, i) =>
+    discountValue(fcf, discountRate, i + 1)
   );
 
-  const enterpriseValue = pvForecast + pvTerminal;
+  const pvFCF = discountedFCF.reduce((a, b) => a + b, 0);
 
-  const equityValue = enterpriseValue;
-  const valuePerShare = equityValue / sharesOutstanding;
+  const lastFCF = projectedFCF[projectedFCF.length - 1];
+
+  const terminalValueGordon = calculateTerminalValueGordon(
+    lastFCF,
+    terminalGrowthRate,
+    discountRate
+  );
+
+  const terminalValueMultiple = calculateTerminalValueMultiple(
+    lastFCF,
+    exitMultiple
+  );
+
+  const pvTerminalGordon = discountValue(
+    terminalValueGordon,
+    discountRate,
+    years
+  );
+
+  const pvTerminalMultiple = discountValue(
+    terminalValueMultiple,
+    discountRate,
+    years
+  );
+
+  const enterpriseValueGordon = pvFCF + pvTerminalGordon;
+  const enterpriseValueMultiple = pvFCF + pvTerminalMultiple;
+
+  const equityValueGordon = enterpriseValueGordon;
+  const equityValueMultiple = enterpriseValueMultiple;
 
   return {
-    pvForecast,
-    terminalValue,
-    pvTerminal,
-    enterpriseValue,
-    equityValue,
-    valuePerShare,
-    sensitivity: sensitivityMatrix(inputs, projections)
+    projectedFCF,
+    discountedFCF,
+    pvFCF,
+    terminalValueGordon,
+    terminalValueMultiple,
+    pvTerminalGordon,
+    pvTerminalMultiple,
+    enterpriseValueGordon,
+    enterpriseValueMultiple,
+    equityValueGordon,
+    equityValueMultiple,
+    valuePerShareGordon: equityValueGordon / sharesOutstanding,
+    valuePerShareMultiple: equityValueMultiple / sharesOutstanding
   };
 }
 
-function sensitivityMatrix(inputs: ValuationInput, projections: Projection[]) {
-  const grid = [-0.02, -0.01, 0, 0.01, 0.02];
-
-  const baseWacc = inputs.wacc;
-  const baseGrowth = inputs.growthRate;
-
-  const matrix: number[][] = [];
-
-  for (let gDelta of grid) {
-    const row: number[] = [];
-    for (let rDelta of grid) {
-      const adjInputs = {
-        ...inputs,
-        wacc: baseWacc + rDelta,
-        growthRate: baseGrowth + gDelta
-      };
-
-      const last = projections[projections.length - 1];
-      const adjLastFCF = last.freeCashFlow * (1 + adjInputs.growthRate);
-
-      let term =
-        adjInputs.terminalMethod === "gordon"
-          ? (adjLastFCF * (1 + (adjInputs.perpetualGrowth ?? 0.02))) /
-            (adjInputs.wacc - (adjInputs.perpetualGrowth ?? 0.02))
-          : adjLastFCF * (adjInputs.exitMultiple ?? 10);
-
-      const pvTerm = term / Math.pow(1 + adjInputs.wacc, projections.length);
-      const pvForecast = projections.reduce(
-        (s, p, idx) =>
-          s + p.freeCashFlow / Math.pow(1 + adjInputs.wacc, idx + 1),
-        0
-      );
-
-      const ev = pvForecast + pvTerm;
-      const vps = ev / adjInputs.sharesOutstanding;
-
-      row.push(Number(vps.toFixed(2)));
-    }
-    matrix.push(row);
-  }
-
-  return matrix;
-}
