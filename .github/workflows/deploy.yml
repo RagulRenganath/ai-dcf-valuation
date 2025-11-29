@@ -1,4 +1,4 @@
-nname: Deploy DCF App to GitHub Pages
+name: Deploy DCF App to GitHub Pages
 
 on:
   push:
