@@ -21,6 +21,8 @@ export default function Sidebar() {
 
       <nav className="flex flex-col gap-2">
         <Link className="p-2 hover:bg-gray-100 rounded" to="/">Dashboard</Link>
+        <Link to="/wacc" className="nav-item">WACC Calculator</Link>
+        <Link to="/dgm" className="nav-item">Dividend Growth Model</Link>
         <Link className="p-2 hover:bg-gray-100 rounded" to="/new">New Valuation</Link>
         <Link className="p-2 hover:bg-gray-100 rounded" to="/history">History</Link>
       </nav>
