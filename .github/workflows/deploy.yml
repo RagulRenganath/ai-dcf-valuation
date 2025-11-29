@@ -52,12 +52,10 @@ jobs:
         with:
           path: dist
 
+      # FIX: Give this step a UNIQUE ID
       - name: Deploy to GitHub Pages
-        id: deployment
+        id: deploy_pages
         uses: actions/deploy-pages@v4
 
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
 
 
