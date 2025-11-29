@@ -1,4 +1,4 @@
-name: DEBUG DEPLOYMENT — DCF App
+name: Debug Deploy to GitHub Pages
 
 on:
   push:
@@ -12,7 +12,7 @@ permissions:
   id-token: write
 
 jobs:
-  debug-build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
@@ -27,14 +27,13 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # DEBUG: Show all GitHub secrets available (values masked)
-      - name: DEBUG — List available secrets
+      # List secrets (masked)
+      - name: DEBUG – Show secrets exist
         run: |
-          echo "Listing available secrets:"
           echo "API KEY: $VITE_FIREBASE_API_KEY"
           echo "AUTH DOMAIN: $VITE_FIREBASE_AUTH_DOMAIN"
           echo "PROJECT ID: $VITE_FIREBASE_PROJECT_ID"
-          echo "STORAGE BUCKET: $VITE_FIREBASE_STORAGE_BUCKET"
+          echo "BUCKET: $VITE_FIREBASE_STORAGE_BUCKET"
           echo "SENDER: $VITE_FIREBASE_MESSAGING_SENDER_ID"
           echo "APP ID: $VITE_FIREBASE_APP_ID"
         env:
@@ -45,8 +44,8 @@ jobs:
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
 
-      # Generate .env file
-      - name: Generate .env file
+      # Generate .env file for Vite
+      - name: Generate .env
         run: |
           echo "VITE_FIREBASE_API_KEY=$VITE_FIREBASE_API_KEY" >> .env
           echo "VITE_FIREBASE_AUTH_DOMAIN=$VITE_FIREBASE_AUTH_DOMAIN" >> .env
@@ -62,13 +61,13 @@ jobs:
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
 
-      # DEBUG: confirm .env exists and show masked content
-      - name: DEBUG — Validate .env file
+      # Show .env for debugging (values masked)
+      - name: DEBUG – Show .env exists
         run: |
-          echo "Listing root folder:"
+          echo "Listing root:"
           ls -la
-          echo "Showing .env file (MASKED):"
-          sed -n '1,200p' .env || echo "NO .env FOUND!!!"
+          echo "Displaying .env:"
+          sed -n '1,200p' .env || echo ".env MISSING!"
 
       - name: Build project
         run: npm run build
@@ -78,19 +77,8 @@ jobs:
         with:
           path: dist
 
-      - name: Deploy to GitHub Pages
-        id: deploy_pages
-        uses: actions/deploy-pages@v4
-
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: dist
-
-      # FIX: Give this step a UNIQUE ID
-      - name: Deploy to GitHub Pages
-        id: deploy_pages
+      - name: Deploy
+        id: deploy_to_pages
         uses: actions/deploy-pages@v4
 
 
