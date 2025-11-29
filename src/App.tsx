@@ -34,6 +34,8 @@ export default function App() {
         <main className="flex-1 md:ml-64 min-h-screen bg-background">
           <Routes>
             <Route path="/" element={<Dashboard />} />
+            <Route path="/wacc" element={<WaccCalculator />} />
+            <Route path="/dgm" element={<DgmCalculator />} />
             <Route path="/new" element={<NewValuation />} />
             <Route path="/history" element={<History />} />
 
