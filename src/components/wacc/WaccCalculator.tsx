@@ -1,9 +1,6 @@
 import { useState } from "react";
-
 export default function WaccCalculator() {
-  return (
-    <div>WACC Calculator Working</div>
-  );
+  return <div className="p-4 bg-white shadow">WACC Calculator Working</div>;
 }
   const [rf, setRf] = useState("");
   const [beta, setBeta] = useState("");
