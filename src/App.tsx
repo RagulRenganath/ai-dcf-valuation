@@ -2,6 +2,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Sidebar from "./components/layout/Sidebar";
 import Header from "./components/layout/Header";
 import Dashboard from "./pages/Dashboard";
+import WaccCalculator from "./components/wacc/WaccCalculator";
+import DgmCalculator from "./components/dgm/DgmCalculator";
 import NewValuation from "./pages/NewValuation";
 import History from "./pages/History";
 import Login from "./components/auth/Login";
