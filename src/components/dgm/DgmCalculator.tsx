@@ -1,6 +1,8 @@
 import { useState } from "react";
 
 export default function DgmCalculator() {
+  return <div className="p-4 bg-white shadow">DGM Calculator Working</div>;
+}
   const [d1, setD1] = useState("");
   const [r, setR] = useState("");
   const [g, setG] = useState("");
