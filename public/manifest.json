@@ -1,0 +1,21 @@
+{
+  "name": "AI DCF Valuation",
+  "short_name": "ai-dcf",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#F7FAFC",
+  "theme_color": "#0B2545",
+  "description": "AI-powered professional DCF Valuation Tool with animations, charts, and PDF export.",
+  "icons": [
+    {
+      "src": "logo-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "logo-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
