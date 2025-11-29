@@ -13,7 +13,7 @@ export default function App() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/ai-dcf-valuation">
       <div className="flex">
         <Sidebar />
 
@@ -22,12 +22,12 @@ export default function App() {
           <Header onMenu={() => setMenuOpen(!menuOpen)} />
         </div>
 
-        {/* Mobile slide-in menu */}
+        {/* Mobile slide-in side menu */}
         {menuOpen && (
           <div className="absolute bg-white shadow p-4 w-56 top-16 left-0 md:hidden rounded">
-            <a className="block p-2" href="/">Dashboard</a>
-            <a className="block p-2" href="/new">New Valuation</a>
-            <a className="block p-2" href="/history">History</a>
+            <a className="block p-2" href="/ai-dcf-valuation/">Dashboard</a>
+            <a className="block p-2" href="/ai-dcf-valuation/new">New Valuation</a>
+            <a className="block p-2" href="/ai-dcf-valuation/history">History</a>
           </div>
         )}
 
@@ -47,3 +47,4 @@ export default function App() {
     </BrowserRouter>
   );
 }
+
