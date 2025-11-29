@@ -1,0 +1,23 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Theme Variables */
+:root {
+  --primary: #0b2545;
+  --secondary: #1fb6a4;
+  --highlight: #f5a524;
+  --bg: #f7fafc;
+  --darktext: #1f2d3d;
+}
+
+body {
+  background: var(--bg);
+  color: var(--darktext);
+  font-family: system-ui, sans-serif;
+}
+
+/* Simple reusable card class */
+.card {
+  @apply bg-white p-4 rounded-xl shadow;
+}
