@@ -1,61 +1,68 @@
 import { useState } from "react";
 
-export default function WaccCalculator() {
-  const [rf, setRf] = useState("");
-  const [beta, setBeta] = useState("");
-  const [rm, setRm] = useState("");
-  const [debt, setDebt] = useState("");
-  const [interest, setInterest] = useState("");
-  const [equity, setEquity] = useState("");
-  const [tax, setTax] = useState("");
+export default function DgmCalculator() {
+  const [d1, setD1] = useState("");
+  const [r, setR] = useState("");
+  const [g, setG] = useState("");
 
-  const [wacc, setWacc] = useState<number | null>(null);
+  const [value, setValue] = useState<number | null>(null);
 
   const calculate = () => {
-    const Rf = parseFloat(rf);
-    const Beta = parseFloat(beta);
-    const Rm = parseFloat(rm);
+    const D1 = parseFloat(d1);
+    const R = parseFloat(r) / 100;
+    const G = parseFloat(g) / 100;
 
-    const Debt = parseFloat(debt);
-    const Equity = parseFloat(equity);
-    const Interest = parseFloat(interest);
-    const Tax = parseFloat(tax) / 100;
+    if (R <= G) {
+      alert("Required return (r) must be greater than growth rate (g).");
+      return;
+    }
 
-    const Re = (Rf + Beta * (Rm - Rf)) / 100;
-    const Rd = Interest / Debt;
-
-    const V = Debt + Equity;
-
-    const result = ((Equity / V) * Re + (Debt / V) * Rd * (1 - Tax)) * 100;
-    setWacc(result);
+    const result = D1 / (R - G);
+    setValue(result);
   };
 
   return (
     <div className="p-6 bg-white shadow rounded-md space-y-4">
-      <h2 className="text-xl font-semibold text-primary">WACC Calculator</h2>
+      <h2 className="text-xl font-semibold text-primary">
+        Dividend Growth Model (DGM)
+      </h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <input className="input" placeholder="Risk-free Rate (%)" value={rf} onChange={e => setRf(e.target.value)} />
-        <input className="input" placeholder="Beta" value={beta} onChange={e => setBeta(e.target.value)} />
-        <input className="input" placeholder="Market Return (%)" value={rm} onChange={e => setRm(e.target.value)} />
-        <input className="input" placeholder="Total Debt" value={debt} onChange={e => setDebt(e.target.value)} />
-        <input className="input" placeholder="Interest Expense" value={interest} onChange={e => setInterest(e.target.value)} />
-        <input className="input" placeholder="Market Value of Equity" value={equity} onChange={e => setEquity(e.target.value)} />
-        <input className="input" placeholder="Tax Rate (%)" value={tax} onChange={e => setTax(e.target.value)} />
+      <div className="space-y-3">
+        <input
+          className="input"
+          placeholder="Next Year Dividend (D1)"
+          value={d1}
+          onChange={(e) => setD1(e.target.value)}
+        />
+
+        <input
+          className="input"
+          placeholder="Required Return (%)"
+          value={r}
+          onChange={(e) => setR(e.target.value)}
+        />
+
+        <input
+          className="input"
+          placeholder="Growth Rate (%)"
+          value={g}
+          onChange={(e) => setG(e.target.value)}
+        />
       </div>
 
       <button
         onClick={calculate}
         className="bg-secondary text-white px-4 py-2 rounded shadow hover:bg-primary transition"
       >
-        Calculate WACC
+        Calculate Value
       </button>
 
-      {wacc !== null && (
+      {value !== null && (
         <p className="text-lg font-bold text-highlight mt-3">
-          WACC: {wacc.toFixed(2)}%
+          Intrinsic Value per Share: ₹{value.toFixed(2)}
         </p>
       )}
     </div>
   );
 }
+
